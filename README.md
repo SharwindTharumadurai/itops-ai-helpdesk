@@ -1,7 +1,6 @@
 # ITOps AI: AI-driven IT support and endpoint automation on the AWS free tier
 
-<!-- After pushing, replace OWNER/REPO with your GitHub path -->
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/SharwindTharumadurai/itops-ai-helpdesk/actions/workflows/ci.yml/badge.svg)](https://github.com/SharwindTharumadurai/itops-ai-helpdesk/actions/workflows/ci.yml)
 
 A helpdesk chatbot that takes plain-language IT requests. For example: *"my laptop can't open any
 websites"*, *"I clicked a phishing link"* or *"please install VLC"*. It classifies the request, logs a
