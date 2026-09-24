@@ -35,10 +35,13 @@ network reset, patch install and antivirus scan. The scripts exist and pass synt
 run on hardware. This is a portfolio project, not a production service; see [§6](#6-lessons-learned) and
 [§7](#7-before-real-company-use).
 
-<!-- Screenshots: add images to docs/images/ and uncomment
-![Chat with a fix running on the laptop](docs/images/chat.png)
-![Approvals queue with an AI-generated script](docs/images/approvals.png)
--->
+**"Websites won't load"**: the AI picks *Flush DNS cache*, it runs on the laptop through SSM, and the output comes back in about 10 seconds:
+
+![Chat: a DNS problem fixed automatically on the laptop, with the command output](docs/images/chat.png)
+
+**"Can I get Notepad++ installed?"**: software installs wait for an IT admin, then install silently through winget. Every step is recorded:
+
+![Ticket history: request, approval, install on the device and the winget output](docs/images/ticket.png)
 
 ---
 
