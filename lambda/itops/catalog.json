@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "categories": ["hardware", "software", "os", "network", "account", "security", "email_collab", "other"],
+  "actions": {
+    "collect_diagnostics": {
+      "title": "Collect device diagnostics",
+      "category": "os",
+      "executor": "ssm",
+      "document": "ITOps-CollectDiagnostics",
+      "approval": "auto",
+      "platforms": ["windows", "linux", "macos"],
+      "scripts": {"windows": "windows/Collect-Diagnostics.ps1", "linux": "unix/collect_diagnostics.sh", "macos": "unix/collect_diagnostics.sh"},
+      "timeout": 300,
+      "parameters": {},
+      "hint": "Slow computer, crashes, low disk space, general 'something is wrong' reports. Safe first step when unsure."
+    },
+    "flush_dns": {
+      "title": "Flush DNS cache",
+      "category": "network",
+      "executor": "ssm",
+      "document": "ITOps-FlushDns",
+      "approval": "auto",
+      "platforms": ["windows", "linux", "macos"],
+      "scripts": {"windows": "windows/Flush-Dns.ps1", "linux": "unix/flush_dns.sh", "macos": "unix/flush_dns.sh"},
+      "timeout": 120,
+      "parameters": {},
+      "hint": "Websites or internal hostnames not resolving, 'server not found', DNS_PROBE errors, a site works on phone but not laptop."
+    },
+    "reset_network_adapters": {
+      "title": "Reset network adapters",
+      "category": "network",
+      "executor": "ssm",
+      "document": "ITOps-ResetNetwork",
+      "approval": "auto",
+      "platforms": ["windows", "linux", "macos"],
+      "scripts": {"windows": "windows/Reset-NetworkAdapters.ps1", "linux": "unix/reset_network.sh", "macos": "unix/reset_network.sh"},
+      "timeout": 300,
+      "parameters": {
+        "Mode": {"allowedValues": ["Soft", "Full"], "default": "Soft", "description": "Soft = bounce adapters. Full = also reset Winsock/TCP-IP stack (Windows needs a reboot afterwards)."}
+      },
+      "hint": "No internet, limited connectivity, Wi-Fi connected but nothing loads, adapter stuck. Use Full only if Soft was already tried."
+    },
+    "clear_temp_files": {
+      "title": "Clear temporary files",
+      "category": "os",
+      "executor": "ssm",
+      "document": "ITOps-ClearTemp",
+      "approval": "auto",
+      "platforms": ["windows", "linux", "macos"],
+      "scripts": {"windows": "windows/Clear-TempFiles.ps1", "linux": "unix/clear_temp.sh", "macos": "unix/clear_temp.sh"},
+      "timeout": 900,
+      "parameters": {
+        "AgeDays": {"pattern": "^([1-9]|[1-8][0-9]|90)$", "default": "2", "description": "Only delete temp files older than this many days (1-90)."}
+      },
+      "hint": "Disk full, low storage warnings, slow performance caused by temp/cache build-up."
+    },
+    "restart_print_spooler": {
+      "title": "Restart print spooler and clear stuck jobs",
+      "category": "hardware",
+      "executor": "ssm",
+      "document": "ITOps-RestartPrinting",
+      "approval": "auto",
+      "platforms": ["windows", "linux", "macos"],
+      "scripts": {"windows": "windows/Restart-PrintSpooler.ps1", "linux": "unix/restart_printing.sh", "macos": "unix/restart_printing.sh"},
+      "timeout": 180,
+      "parameters": {},
+      "hint": "Printer not printing, jobs stuck in queue, 'printer offline' while the printer itself is on."
+    },
+    "clear_teams_cache": {
+      "title": "Clear Microsoft Teams cache",
+      "category": "email_collab",
+      "executor": "ssm",
+      "document": "ITOps-ClearTeamsCache",
+      "approval": "auto",
+      "platforms": ["windows"],
+      "scripts": {"windows": "windows/Clear-TeamsCache.ps1"},
+      "timeout": 180,
+      "parameters": {},
+      "hint": "Teams won't load, stuck signing in, blank white screen, missing chats/channels, status stuck."
+    },
+    "install_software": {
+      "title": "Install approved software",
+      "category": "software",
+      "executor": "ssm",
+      "document": "ITOps-InstallSoftware",
+      "approval": "admin",
+      "platforms": ["windows", "linux", "macos"],
+      "scripts": {"windows": "windows/Install-Software.ps1", "linux": "unix/install_software.sh", "macos": "unix/install_software.sh"},
+      "timeout": 1800,
+      "parameters": {
+        "Software": {"allowedValues": ["chrome", "firefox", "7zip", "vlc", "notepadplusplus", "vscode", "zoom", "adobereader"], "description": "Logical package name from the approved software list."}
+      },
+      "hint": "User asks for an application to be installed. Only packages on the approved list; anything else needs a human."
+    },
+    "antivirus_scan": {
+      "title": "Run antivirus scan",
+      "category": "security",
+      "executor": "ssm",
+      "document": "ITOps-AntivirusScan",
+      "approval": "auto",
+      "platforms": ["windows", "linux", "macos"],
+      "scripts": {"windows": "windows/Start-DefenderScan.ps1", "linux": "unix/av_scan.sh", "macos": "unix/av_scan.sh"},
+      "timeout": 7200,
+      "parameters": {
+        "ScanType": {"allowedValues": ["QuickScan", "FullScan"], "default": "QuickScan", "description": "QuickScan takes minutes; FullScan can take hours."}
+      },
+      "hint": "Suspected malware, pop-ups, suspicious file opened, security alert on the device."
+    },
+    "scan_updates": {
+      "title": "Scan for missing OS patches",
+      "category": "security",
+      "executor": "ssm",
+      "document": "AWS-RunPatchBaseline",
+      "managed_document": true,
+      "approval": "auto",
+      "platforms": ["windows", "linux", "macos"],
+      "fixed_parameters": {"Operation": "Scan"},
+      "timeout": 1800,
+      "parameters": {},
+      "hint": "Is my machine up to date, patch compliance check, security update status."
+    },
+    "install_updates": {
+      "title": "Install OS patches (no automatic reboot)",
+      "category": "security",
+      "executor": "ssm",
+      "document": "AWS-RunPatchBaseline",
+      "managed_document": true,
+      "approval": "admin",
+      "platforms": ["windows", "linux", "macos"],
+      "fixed_parameters": {"Operation": "Install", "RebootOption": "NoReboot"},
+      "timeout": 7200,
+      "parameters": {},
+      "hint": "Apply pending security/OS updates."
+    },
+    "ad_unlock_account": {
+      "title": "Unlock on-prem Active Directory account",
+      "category": "account",
+      "executor": "ssm",
+      "document": "ITOps-ADUnlockAccount",
+      "approval": "admin",
+      "target_role": "ADAdmin",
+      "platforms": ["windows"],
+      "scripts": {"windows": "windows/Unlock-ADAccount.ps1"},
+      "timeout": 120,
+      "parameters": {
+        "SamAccountName": {"pattern": "^[A-Za-z0-9._-]{1,20}$", "description": "The AD sAMAccountName (pre-Windows 2000 logon name)."}
+      },
+      "hint": "Domain account locked out after too many wrong passwords (on-prem AD)."
+    },
+    "ad_add_group_member": {
+      "title": "Add user to on-prem AD group",
+      "category": "account",
+      "executor": "ssm",
+      "document": "ITOps-ADAddGroupMember",
+      "approval": "admin",
+      "target_role": "ADAdmin",
+      "platforms": ["windows"],
+      "scripts": {"windows": "windows/Add-ADGroupMember.ps1"},
+      "timeout": 120,
+      "parameters": {
+        "SamAccountName": {"pattern": "^[A-Za-z0-9._-]{1,20}$", "description": "The AD sAMAccountName."},
+        "GroupName": {"allowedValues": ["VPN-Users", "WiFi-Staff", "Printers-HQ", "FileShare-Finance-Read"], "description": "Approved AD group."}
+      },
+      "hint": "Access to a network share, VPN, Wi-Fi or printer that is controlled by an on-prem AD group."
+    },
+    "entra_reset_password": {
+      "title": "Reset Entra ID (Microsoft 365) password",
+      "category": "account",
+      "executor": "graph",
+      "approval": "admin",
+      "parameters": {
+        "UserPrincipalName": {"pattern": "^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,190}\\.[A-Za-z]{2,24}$", "default_from": "requester", "description": "Target user's UPN. Defaults to the requester."}
+      },
+      "hint": "Forgot Microsoft 365 / Outlook / Teams password, password expired. A temporary password is issued and must be changed at next sign-in."
+    },
+    "entra_revoke_sessions": {
+      "title": "Sign out of all Microsoft 365 sessions",
+      "category": "security",
+      "executor": "graph",
+      "approval": "auto_self",
+      "parameters": {
+        "UserPrincipalName": {"pattern": "^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,190}\\.[A-Za-z]{2,24}$", "default_from": "requester", "description": "Target user's UPN. Defaults to the requester."}
+      },
+      "hint": "Lost/stolen phone or laptop, suspected account compromise, clicked a phishing link, 'sign me out everywhere'."
+    },
+    "entra_add_group_member": {
+      "title": "Add user to Entra ID / M365 group",
+      "category": "account",
+      "executor": "graph",
+      "approval": "admin",
+      "parameters": {
+        "UserPrincipalName": {"pattern": "^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,190}\\.[A-Za-z]{2,24}$", "default_from": "requester", "description": "User to add."},
+        "Group": {"source": "graph_groups", "description": "Approved Entra/M365 group (from the GRAPH_GROUP_ALLOWLIST)."}
+      },
+      "hint": "Access to a Team, SharePoint site, shared mailbox or app controlled by an Entra/M365 group."
+    },
+    "entra_create_user": {
+      "title": "Create Entra ID (Microsoft 365) user",
+      "category": "account",
+      "executor": "graph",
+      "approval": "admin",
+      "parameters": {
+        "DisplayName": {"pattern": "^[A-Za-z][A-Za-z .'-]{1,63}$", "description": "Full name of the new user."},
+        "UserPrincipalName": {"pattern": "^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,190}\\.[A-Za-z]{2,24}$", "description": "New user's UPN (must be in an allowed domain)."}
+      },
+      "hint": "New joiner / onboarding: create an account for a new staff member."
+    }
+  }
+}

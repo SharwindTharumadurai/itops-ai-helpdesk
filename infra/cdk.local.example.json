@@ -1,0 +1,12 @@
+{
+  "jwtIssuer": "https://login.microsoftonline.com/<tenant-id>/v2.0",
+  "jwtAudience": "<ITOps API app client-id>",
+  "budgetEmail": "you@example.com",
+  "graphTenantId": "<tenant-id, or empty to disable Graph actions>",
+  "graphClientId": "<ITOps Graph Automation app client-id>",
+  "graphGroupAllowlist": {
+    "Sales Team": "<group-object-id>"
+  },
+  "allowedUpnDomains": "contoso.onmicrosoft.com",
+  "protectedUpns": ""
+}

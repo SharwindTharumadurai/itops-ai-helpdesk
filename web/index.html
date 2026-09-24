@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Scripts only from this site and the pinned MSAL build on jsDelivr; network calls only to
+       Microsoft sign-in and API Gateway in this region
+       (change the region if you deploy elsewhere, or pin your exact API host). No inline scripts or styles are allowed. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net https://login.microsoftonline.com https://*.execute-api.ap-southeast-1.amazonaws.com; frame-src https://login.microsoftonline.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>ITOps Helpdesk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M9 17l4 4 10-10' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <!-- Signed-out -->
+  <main id="signed-out" class="center" hidden>
+    <div class="login-card">
+      <div class="logo" aria-hidden="true">✓</div>
+      <h1>ITOps Helpdesk</h1>
+      <p>Describe an IT problem in plain words. Safe fixes run on your laptop automatically; anything bigger goes to IT for approval.</p>
+      <button id="btn-login" class="primary big">Sign in with Microsoft</button>
+    </div>
+  </main>
+
+  <!-- Signed-in -->
+  <div id="signed-in" hidden>
+    <header class="topbar">
+      <div class="brand"><span class="logo small" aria-hidden="true">✓</span> ITOps Helpdesk</div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="chat" role="tab">Chat</button>
+        <button class="tab" data-tab="tickets" role="tab">My tickets</button>
+        <button class="tab" data-tab="approvals" role="tab" hidden id="tab-approvals">Approvals <span id="approval-count" class="count" hidden></span></button>
+      </nav>
+      <div class="user">
+        <span id="user-name"></span>
+        <span id="user-role" class="pill" hidden>IT admin</span>
+        <button id="btn-logout" class="ghost">Sign out</button>
+      </div>
+    </header>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <!-- Chat -->
+    <section id="view-chat" class="view">
+      <div class="chat">
+        <div id="messages" class="messages" aria-live="polite">
+          <div class="msg bot">
+            <div class="bubble">Hi! Tell me what's wrong, for example <em>"websites won't load"</em>, <em>"printer is stuck"</em> or <em>"I need 7-Zip installed"</em>. Please never type passwords here.</div>
+          </div>
+        </div>
+        <form id="chat-form" class="composer">
+          <label class="device-picker">
+            <span>Device</span>
+            <select id="device-select"><option value="">Auto (my device)</option></select>
+          </label>
+          <textarea id="chat-input" rows="2" maxlength="2000" placeholder="Describe the problem… (Enter to send, Shift+Enter for a new line)" required></textarea>
+          <button id="btn-send" class="primary" type="submit">Send</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- My tickets -->
+    <section id="view-tickets" class="view" hidden>
+      <div class="toolbar"><h2>My tickets</h2><button id="btn-refresh-tickets" class="ghost">Refresh</button></div>
+      <div class="split">
+        <div id="ticket-list" class="list"></div>
+        <div id="ticket-detail" class="detail empty">Select a ticket to see its details.</div>
+      </div>
+    </section>
+
+    <!-- Approvals (admins) -->
+    <section id="view-approvals" class="view" hidden>
+      <div class="toolbar">
+        <h2>IT queue</h2>
+        <select id="queue-status">
+          <option value="PENDING_APPROVAL">Waiting for approval</option>
+          <option value="NEEDS_HUMAN">Needs a technician</option>
+          <option value="BLOCKED">Blocked scripts</option>
+          <option value="FAILED">Failed</option>
+        </select>
+        <button id="btn-refresh-queue" class="ghost">Refresh</button>
+      </div>
+      <details id="draft-panel" class="draft-panel">
+        <summary>Draft a fix script with AI (for problems the catalog doesn't cover)</summary>
+        <form id="draft-form" class="draft-form">
+          <p class="meta">The script is <strong>never</strong> run automatically: it is scanned for dangerous commands, then a <strong>different</strong> IT admin must read and approve it.</p>
+          <label>Device <select id="draft-device" required></select></label>
+          <label>What should the script do?
+            <textarea id="draft-goal" rows="3" maxlength="2000" required placeholder="e.g. Report the size of each user's Downloads folder, without deleting anything"></textarea>
+          </label>
+          <div class="actions"><button id="btn-draft" class="primary" type="submit">Draft script</button><span id="draft-result" class="meta"></span></div>
+        </form>
+      </details>
+      <div id="queue" class="queue"></div>
+    </section>
+  </div>
+
+  <!-- One-time secret dialog (temporary passwords) -->
+  <dialog id="secret-dialog">
+    <h3>Temporary password</h3>
+    <p class="warn">Shown <strong>once</strong> and not stored anywhere. Give it to the user by phone or in person. They must change it at next sign-in.</p>
+    <div class="secret-row"><code id="secret-value"></code><button id="btn-copy-secret" class="ghost">Copy</button></div>
+    <div class="dialog-actions"><button id="btn-close-secret" class="primary">Done, close</button></div>
+  </dialog>
+</body>
+</html>

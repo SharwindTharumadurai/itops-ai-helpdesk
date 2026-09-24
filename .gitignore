@@ -1,0 +1,16 @@
+# Deployment-specific values (tenant/app IDs, emails, account ID, API URL) - never commit
+infra/cdk.local.json
+web/config.js
+infra/iam/itops-deployer-policy.json
+
+# Build output and environments
+.venv/
+infra/cdk.out/
+cdk.out/
+__pycache__/
+*.pyc
+
+# Secrets that should never be on disk here, but just in case
+.env
+*.pem
+*.key

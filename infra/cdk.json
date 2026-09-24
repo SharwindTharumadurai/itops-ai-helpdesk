@@ -1,0 +1,16 @@
+{
+  "app": ".venv\\Scripts\\python.exe app.py",
+  "context": {
+    "llmProvider": "gemini",
+    "llmModel": "gemini-3.6-flash",
+    "llmFallbackProvider": "groq",
+    "llmFallbackModel": "openai/gpt-oss-120b",
+    "allowedOrigins": [
+      "http://localhost:5173"
+    ],
+    "adminRole": "ITOps.Admin",
+    "requireTwoPerson": true,
+    "allowGeneratedScripts": true,
+    "killSwitch": true
+  }
+}

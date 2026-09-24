@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Python dependencies
+        run: pip install boto3 -r infra/requirements.txt
+
+      - name: Unit tests (validation, guardrails, approval policy, LLM failover)
+        run: python -m unittest discover -s tests -v
+
+      - name: CDK synth with example settings
+        working-directory: infra
+        env:
+          CDK_DEFAULT_ACCOUNT: "123456789012"
+          CDK_DEFAULT_REGION: ap-southeast-1
+        run: |
+          cp cdk.local.example.json cdk.local.json
+          python - <<'EOF'
+          import json
+          import aws_cdk as cdk
+          from itops.itops_stack import ItOpsStack
+          app = cdk.App(context=json.load(open("cdk.json"))["context"])
+          ItOpsStack(app, "ItOpsAi", env=cdk.Environment(account="123456789012", region="ap-southeast-1"))
+          template = app.synth().get_stack_by_name("ItOpsAi").template
+          print(f"Synthesized {len(template['Resources'])} resources")
+          EOF
+
+      - name: Web app syntax
+        run: |
+          cp web/app.js "$RUNNER_TEMP/app.mjs"
+          node --check "$RUNNER_TEMP/app.mjs"
+          cp web/config.example.js "$RUNNER_TEMP/config.mjs"
+          node --check "$RUNNER_TEMP/config.mjs"
+
+      - name: Bash script syntax
+        run: for f in scripts/unix/*.sh scripts/onboarding/*.sh; do bash -n "$f" && echo "ok  $f"; done
+
+      - name: PowerShell script syntax
+        shell: pwsh
+        run: |
+          $failed = $false
+          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors) | Out-Null
+            if ($errors) { Write-Output "FAIL $($_.FullName): $($errors[0].Message)"; $failed = $true } else { Write-Output "ok  $($_.Name)" }
+          }
+          if ($failed) { exit 1 }

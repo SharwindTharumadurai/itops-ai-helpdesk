@@ -1,0 +1,112 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CdkDeployViaBootstrapRoles",
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::{{ACCOUNT_ID}}:role/cdk-hnb659fds-*"
+    },
+    {
+      "Sid": "CdkBootstrapStack",
+      "Effect": "Allow",
+      "Action": "cloudformation:*",
+      "Resource": "arn:aws:cloudformation:{{REGION}}:{{ACCOUNT_ID}}:stack/CDKToolkit/*"
+    },
+    {
+      "Sid": "CdkBootstrapRoles",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole", "iam:DeleteRole", "iam:GetRole", "iam:TagRole", "iam:UntagRole",
+        "iam:UpdateAssumeRolePolicy", "iam:PutRolePolicy", "iam:GetRolePolicy", "iam:DeleteRolePolicy",
+        "iam:AttachRolePolicy", "iam:DetachRolePolicy", "iam:ListRolePolicies", "iam:ListAttachedRolePolicies"
+      ],
+      "Resource": "arn:aws:iam::{{ACCOUNT_ID}}:role/cdk-hnb659fds-*"
+    },
+    {
+      "Sid": "CdkBootstrapAssetStores",
+      "Effect": "Allow",
+      "Action": ["s3:*", "ecr:*"],
+      "Resource": [
+        "arn:aws:s3:::cdk-hnb659fds-*",
+        "arn:aws:ecr:{{REGION}}:{{ACCOUNT_ID}}:repository/cdk-hnb659fds-*"
+      ]
+    },
+    {
+      "Sid": "CdkBootstrapVersionParam",
+      "Effect": "Allow",
+      "Action": ["ssm:GetParameter", "ssm:GetParameters", "ssm:PutParameter", "ssm:DeleteParameter", "ssm:AddTagsToResource"],
+      "Resource": "arn:aws:ssm:{{REGION}}:{{ACCOUNT_ID}}:parameter/cdk-bootstrap/*"
+    },
+    {
+      "Sid": "ReadItOpsStack",
+      "Effect": "Allow",
+      "Action": ["cloudformation:DescribeStacks", "cloudformation:DescribeStackEvents", "cloudformation:DescribeStackResources"],
+      "Resource": "arn:aws:cloudformation:{{REGION}}:{{ACCOUNT_ID}}:stack/ItOpsAi/*"
+    },
+    {
+      "Sid": "ManageItOpsSecrets",
+      "Effect": "Allow",
+      "Action": ["ssm:PutParameter", "ssm:GetParameter", "ssm:DeleteParameter", "ssm:DescribeParameters"],
+      "Resource": "arn:aws:ssm:{{REGION}}:{{ACCOUNT_ID}}:parameter/itops/*"
+    },
+    {
+      "Sid": "HybridFleetAdmin",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:CreateActivation", "ssm:DeleteActivation", "ssm:DescribeActivations",
+        "ssm:DescribeInstanceInformation", "ssm:ListCommands", "ssm:ListCommandInvocations", "ssm:GetCommandInvocation"
+      ],
+      "Resource": "*",
+      "Condition": {"StringEquals": {"aws:RequestedRegion": "{{REGION}}"}}
+    },
+    {
+      "Sid": "TagAndRemoveDevices",
+      "Effect": "Allow",
+      "Action": ["ssm:AddTagsToResource", "ssm:RemoveTagsFromResource", "ssm:ListTagsForResource", "ssm:DeregisterManagedInstance"],
+      "Resource": [
+        "arn:aws:ssm:{{REGION}}:{{ACCOUNT_ID}}:managed-instance/*",
+        "arn:aws:ssm:{{REGION}}:{{ACCOUNT_ID}}:activation/*",
+        "arn:aws:iam::{{ACCOUNT_ID}}:role/ITOpsHybridEndpointRole-*"
+      ]
+    },
+    {
+      "Sid": "ViewSsmDocuments",
+      "Effect": "Allow",
+      "Action": ["ssm:ListDocuments", "ssm:DescribeDocument", "ssm:GetDocument"],
+      "Resource": "*",
+      "Condition": {"StringEquals": {"aws:RequestedRegion": "{{REGION}}"}}
+    },
+    {
+      "Sid": "PassOnlyHybridRoleToSsm",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::{{ACCOUNT_ID}}:role/ITOpsHybridEndpointRole-*",
+      "Condition": {"StringEquals": {"iam:PassedToService": "ssm.amazonaws.com"}}
+    },
+    {
+      "Sid": "OperateItOpsLambdas",
+      "Effect": "Allow",
+      "Action": ["lambda:InvokeFunction", "lambda:GetFunction"],
+      "Resource": "arn:aws:lambda:{{REGION}}:{{ACCOUNT_ID}}:function:ItOpsAi-*"
+    },
+    {
+      "Sid": "ReadItOpsLogsAndData",
+      "Effect": "Allow",
+      "Action": [
+        "logs:DescribeLogStreams", "logs:GetLogEvents", "logs:FilterLogEvents", "logs:StartLiveTail",
+        "dynamodb:GetItem", "dynamodb:Query", "dynamodb:Scan", "dynamodb:DescribeTable"
+      ],
+      "Resource": [
+        "arn:aws:logs:{{REGION}}:{{ACCOUNT_ID}}:log-group:ItOpsAi-*",
+        "arn:aws:dynamodb:{{REGION}}:{{ACCOUNT_ID}}:table/ItOpsAi-*"
+      ]
+    },
+    {
+      "Sid": "ViewBudgetsAndIdentity",
+      "Effect": "Allow",
+      "Action": ["budgets:ViewBudget", "budgets:DescribeBudgetActionsForBudget", "logs:DescribeLogGroups", "sts:GetCallerIdentity"],
+      "Resource": "*"
+    }
+  ]
+}
